@@ -1,0 +1,21 @@
+name: Feuillet
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compiler et publier
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Get-ChildItem *.zip | Sort-Object { [long]("0" + (git log -1 --format=%ct -- $_.Name)) } | ForEach-Object { Expand-Archive $_.FullName . -Force }
+          if (Test-Path ci/compiler.ps1) { ./ci/compiler.ps1 } else { Write-Host 'Deposez le zip de Feuillet' }
